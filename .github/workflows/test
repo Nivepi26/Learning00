@@ -23,3 +23,6 @@ jobs:
           echo "Using Node ${{ env.NODE_VERSION }} on ${{ runner.os }}"
           npm init -y >/dev/null 2>&1 && npm pkg set scripts.build="echo build-ok"
           npm run build
+git add .github/workflows/ci.yml
+git commit -m "lab01: first workflow"
+git push
