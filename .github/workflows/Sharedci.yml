@@ -1,0 +1,50 @@
+name: Shared CI
+on:
+  workflow_call:
+    inputs:
+      service:
+        type: string
+        required: true
+        description: 'Service directory under services/, e.g. checkout'
+      dockerfile:
+        type: string
+        required: true
+      node-version:
+        type: string
+        default: '20'
+    outputs:
+      image-tag:
+        description: 'Immutable image tags built for this run'
+        value: ${{ jobs.build.outputs.image-tag }}
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      image-tag: ${{ steps.build-push.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          cache-dependency-path: services/${{ inputs.service }}/package-lock.json
+      - run: npm ci --prefix services/${{ inputs.service }}
+      - run: npm test --prefix services/${{ inputs.service }}
+      - name: Build & push ${{ inputs.service }}
+        id: build-push
+        uses: ./actions/build-push
+        with:
+          service: ${{ inputs.service }}
+          dockerfile: ${{ inputs.dockerfile }}
+          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry-token: ${{ secrets.DOCKERHUB_TOKEN }}
