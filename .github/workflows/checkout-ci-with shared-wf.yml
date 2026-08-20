@@ -1,0 +1,19 @@
+name: Checkout CI
+on:
+  push:
+    branches: [main]
+    paths: ['services/checkout/**']
+  pull_request:
+    paths: ['services/checkout/**']
+  workflow_dispatch:
+
+jobs:
+  shared-ci:
+    uses: ./.github/workflows/shared-ci.yml
+    with:
+      service: checkout
+      dockerfile: services/checkout/Dockerfile
+      node-version: '20'
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
